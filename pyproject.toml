@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "field-sensor-pipeline"
+version = "0.1.0"
+description = "Ingest, validate and serve sensor data from (simulated) agricultural field trials"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.11"
+dependencies = ["numpy>=1.26", "pandas>=2.1", "SQLAlchemy>=2.0", "fastapi>=0.110"]
+
+[project.optional-dependencies]
+stream = ["kafka-python>=2.0"]
+dashboard = ["streamlit>=1.37", "altair>=5"]
+postgres = ["psycopg[binary]>=3.1"]
+dev = ["pytest>=7", "httpx>=0.27", "uvicorn>=0.29"]
+
+[project.scripts]
+fieldsensor = "fieldsensor.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

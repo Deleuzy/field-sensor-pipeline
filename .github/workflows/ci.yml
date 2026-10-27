@@ -1,0 +1,22 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: pip install -e ".[dev,stream]"
+      # Offline: no broker, no Docker. The stream tests feed messages straight into the sink.
+      - run: pytest -q
+      - name: End-to-end run on simulated data
+        run: fieldsensor run --days 7

@@ -1,0 +1,44 @@
+# Local broker (and optional Postgres) for the streaming demo. Not needed for tests or CI.
+# Start broker:          docker compose up -d --wait redpanda
+# Start with Postgres:   docker compose --profile postgres up -d --wait
+# Stop and clean up:     docker compose --profile postgres down -v
+services:
+  redpanda:
+    image: docker.redpanda.com/redpandadata/redpanda:v24.3.1
+    container_name: field-redpanda
+    command:
+      - redpanda
+      - start
+      - --mode=dev-container
+      - --smp=1
+      - --memory=512M
+      - --overprovisioned
+      - --node-id=0
+      - --kafka-addr=internal://0.0.0.0:9092,external://0.0.0.0:19092
+      - --advertise-kafka-addr=internal://redpanda:9092,external://localhost:19092
+    ports:
+      - "19092:19092"
+    healthcheck:
+      test: ["CMD", "rpk", "cluster", "health"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 10s
+    restart: "no"
+
+  postgres:
+    profiles: ["postgres"]
+    image: postgres:16-alpine
+    container_name: field-postgres
+    environment:
+      POSTGRES_USER: field
+      POSTGRES_PASSWORD: field-local-only
+      POSTGRES_DB: field
+    ports:
+      - "55432:5432"
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "field"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+    restart: "no"
